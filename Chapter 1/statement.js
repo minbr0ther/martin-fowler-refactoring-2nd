@@ -22,14 +22,22 @@ let invoicesJson = {
   ],
 };
 
+function totalAmount() {
+  let result = 0;
+  for (let perf of invoicesJson.performances) {
+    result += amountFor(perf);
+  }
+  return result;
+}
+
 function totalVolumeCredits() {
-  let volumeCredits = 0; //변수 선언(초기화)을 반복문 앞으로 이동
+  let result = 0; //변수 선언(초기화)을 반복문 앞으로 이동
   for (let perf of invoicesJson.performances) {
     //값 누적 로직을 별도 for문으로 분리
     //포인트를 적립한다.
-    volumeCredits += volumeCreditsFor(perf); //추출한 함수를 이용해 값을 누적
+    result += volumeCreditsFor(perf); //추출한 함수를 이용해 값을 누적
   }
-  return volumeCredits;
+  return result;
 }
 
 function usd(aNumber) {
@@ -87,7 +95,6 @@ function amountFor(aPerformance) {
 }
 
 function statement(invoice) {
-  let totalAmount = 0;
   let result = `청구 내역 (고객명: ${invoice.customer})\n`;
 
   for (let perf of invoice.performances) {
@@ -100,11 +107,9 @@ function statement(invoice) {
       //playFor(perf) 변수 인라인
       //amountFor(perf) 변수 인라인
     }석)\n`;
-    totalAmount += amountFor(perf);
-    //amountFor(perf) 변수 인라인
   }
 
-  result += `총액: ${usd(totalAmount)}\n`; //임시 변수였던 usd을 함수 호출로 대체
+  result += `총액: ${usd(totalAmount())}\n`; //임시 변수였던 usd을 함수 호출로 대체, 변수 인라인 하기
   result += `적립 포인트: ${totalVolumeCredits()}점\n`; //값 계산 로직을 함수로 추출, 변수 인라인 하기
   return result;
 }
