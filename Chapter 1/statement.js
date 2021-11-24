@@ -23,13 +23,16 @@ let invoicesJson = {
 };
 
 function statement(invoice) {
-  return renderPlainText(invoice);
+  const statementData = {};
+  statementData.customer = invoice.customer;
+  statementData.performances = invoice.performances;
+  return renderPlainText(statementData);
 }
 
-function renderPlainText(invoice) {
-  let result = `청구 내역 (고객명: ${invoice.customer})\n`;
+function renderPlainText(data) {
+  let result = `청구 내역 (고객명: ${data.customer})\n`;
 
-  for (let perf of invoice.performances) {
+  for (let perf of data.performances) {
     //함수 추출하기, playFor(perf) 변수 인라인, playFor 삭제
     //"조금씩 수정하여 피드백 주기를 짧게 가져가는 습관이 재앙을 피하는 길이다"
 
