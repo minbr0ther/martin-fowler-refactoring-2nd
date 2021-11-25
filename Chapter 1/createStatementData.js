@@ -11,38 +11,11 @@ class PerformanceCalculator {
   }
 
   get amount() {
-    //amountFor() 함수의 코드를 계산기 클래스로 복사
-    let result = 0; //thsAmount -> result
-
-    switch (
-      this.play.type //amountFor() 함수가 매개변수로 받던 정보를 계산기 필드에서 바로 얻음
-    ) {
-      case 'tragedy': // 비극
-        throw '오류 발생'; //비극 공연료는 TragedyCalculator를 이용하도록 유도
-      case 'comedy': //희극
-        result = 30000;
-        if (this.performance.audience > 20) {
-          result += 10000 + 500 * (this.performance.audience - 20);
-        }
-        result += 300 * this.performance.audience;
-        break;
-      default:
-        throw new Error(`알 수 없는 장르: ${this.play.type}`);
-    }
-
-    return result; //함수 안에서 값이 바뀌는 변수 반환
+    throw new Error('서브클래스에서 처리하도록 설계되었습니다.');
   }
 
   get volumeCredits() {
-    let result = 0;
-    result += Math.max(this.performance.audience - 30, 0);
-
-    //희극 관객 5명 마다 추가 포인트를 제공한다.
-    if ('comedy' === this.play.type) {
-      //playFor(this.performances) 변수 인라인
-      result += Math.floor(this.performance.audience / 5);
-    }
-    return result;
+    return Math.max(this.performance.audience - 30, 0);
   }
 }
 
@@ -68,7 +41,20 @@ class TragedyCalculator extends PerformanceCalculator {
   }
 }
 
-class ComedyCalculator extends PerformanceCalculator {}
+class ComedyCalculator extends PerformanceCalculator {
+  get amount() {
+    let result = 30000;
+    if (this.performance.audience > 20) {
+      result += 10000 + 500 * (this.performance.audience - 20);
+    }
+    result += 300 * this.performance.audience;
+    return result;
+  }
+
+  get volumeCredits() {
+    return super.volumeCredits + Math.floor(this.performance.audience / 5);
+  }
+}
 
 export default function credateStatementData(invoice) {
   const result = {};
@@ -97,11 +83,6 @@ export default function credateStatementData(invoice) {
     //임시 변수의 질의 함수로 바꾸기
     return playsJson[aPerformance.playID];
   }
-
-  //   function amountFor(aPerformance) {
-  //     return new PerformanceCalculator(aPerformance, playFor(aPerformance))
-  //       .amount;
-  //   }
 
   function volumeCreditsFor(aPerformance) {
     let volumeCredits = 0;
