@@ -32,6 +32,8 @@ function statement(invoice) {
     //데이터 불변성을 위한 얕은 복사
     const result = Object.assign({}, aPerformance);
     result.play = playFor(result); //중간 데이터에 연극 정보를 저장
+    result.amount = amountFor(result);
+    result.volumeCredits = volumeCreditsFor(result);
     return result;
   }
 
@@ -39,38 +41,6 @@ function statement(invoice) {
     //renderPlainText에서 statement로 옮김
     //임시 변수의 질의 함수로 바꾸기
     return playsJson[aPerformance.playID];
-  }
-}
-
-function renderPlainText(data) {
-  let result = `청구 내역 (고객명: ${data.customer})\n`;
-
-  for (let perf of data.performances) {
-    //함수 추출하기, playFor(perf) 변수 인라인, playFor 삭제
-    //"조금씩 수정하여 피드백 주기를 짧게 가져가는 습관이 재앙을 피하는 길이다"
-
-    //청구 내역을 출력한다.
-    result += `${perf.play.name}: ${usd(amountFor(perf))} (${
-      perf.audience
-      //playFor(perf) 변수 인라인
-      //amountFor(perf) 변수 인라인
-    }석)\n`;
-  }
-
-  result += `총액: ${usd(totalAmount())}\n`; //임시 변수였던 usd을 함수 호출로 대체, 변수 인라인 하기
-  result += `적립 포인트: ${totalVolumeCredits()}점\n`; //값 계산 로직을 함수로 추출, 변수 인라인 하기
-  return result;
-
-  function volumeCreditsFor(aPerformance) {
-    let volumeCredits = 0;
-    volumeCredits += Math.max(aPerformance.audience - 30, 0);
-
-    //희극 관객 5명 마다 추가 포인트를 제공한다.
-    if ('comedy' === aPerformance.play.type) {
-      //playFor(aPerformance) 변수 인라인
-      volumeCredits += Math.floor(aPerformance.audience / 5);
-    }
-    return volumeCredits;
   }
 
   function amountFor(aPerformance) {
@@ -101,10 +71,42 @@ function renderPlainText(data) {
     return result; //함수 안에서 값이 바뀌는 변수 반환
   }
 
+  function volumeCreditsFor(aPerformance) {
+    let volumeCredits = 0;
+    volumeCredits += Math.max(aPerformance.audience - 30, 0);
+
+    //희극 관객 5명 마다 추가 포인트를 제공한다.
+    if ('comedy' === aPerformance.play.type) {
+      //playFor(aPerformance) 변수 인라인
+      volumeCredits += Math.floor(aPerformance.audience / 5);
+    }
+    return volumeCredits;
+  }
+}
+
+function renderPlainText(data) {
+  let result = `청구 내역 (고객명: ${data.customer})\n`;
+
+  for (let perf of data.performances) {
+    //함수 추출하기, playFor(perf) 변수 인라인, playFor 삭제
+    //"조금씩 수정하여 피드백 주기를 짧게 가져가는 습관이 재앙을 피하는 길이다"
+
+    //청구 내역을 출력한다.
+    result += `${perf.play.name}: ${usd(perf.amount)} (${
+      perf.audience
+      //playFor(perf) 변수 인라인
+      //perf.amount 변수 인라인
+    }석)\n`;
+  }
+
+  result += `총액: ${usd(totalAmount())}\n`; //임시 변수였던 usd을 함수 호출로 대체, 변수 인라인 하기
+  result += `적립 포인트: ${totalVolumeCredits()}점\n`; //값 계산 로직을 함수로 추출, 변수 인라인 하기
+  return result;
+
   function totalAmount() {
     let result = 0; //변수 이름 바꾸기
     for (let perf of invoicesJson.performances) {
-      result += amountFor(perf);
+      result += perf.amount;
     }
     return result;
   }
@@ -114,7 +116,7 @@ function renderPlainText(data) {
     for (let perf of invoicesJson.performances) {
       //값 누적 로직을 별도 for문으로 분리
       //포인트를 적립한다.
-      result += volumeCreditsFor(perf); //추출한 함수를 이용해 값을 누적
+      result += perf.volumeCredits; //추출한 함수를 이용해 값을 누적
     }
     return result;
   }
