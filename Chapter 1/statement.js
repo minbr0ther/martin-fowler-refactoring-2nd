@@ -26,6 +26,8 @@ function statement(invoice) {
   const statementData = {};
   statementData.customer = invoice.customer;
   statementData.performances = invoice.performances.map(enrichPerformance);
+  statementData.totalAmount = totalAmount();
+  statementData.totalVolumeCredits = totalVolumeCredits();
   return renderPlainText(statementData);
 
   function enrichPerformance(aPerformance) {
@@ -34,6 +36,24 @@ function statement(invoice) {
     result.play = playFor(result); //중간 데이터에 연극 정보를 저장
     result.amount = amountFor(result);
     result.volumeCredits = volumeCreditsFor(result);
+    return result;
+  }
+
+  function totalAmount() {
+    let result = 0; //변수 이름 바꾸기
+    for (let perf of invoicesJson.performances) {
+      result += perf.amount;
+    }
+    return result;
+  }
+
+  function totalVolumeCredits() {
+    let result = 0; //변수 이름 바꾸기
+    for (let perf of invoicesJson.performances) {
+      //값 누적 로직을 별도 for문으로 분리
+      //포인트를 적립한다.
+      result += perf.volumeCredits; //추출한 함수를 이용해 값을 누적
+    }
     return result;
   }
 
@@ -99,27 +119,9 @@ function renderPlainText(data) {
     }석)\n`;
   }
 
-  result += `총액: ${usd(totalAmount())}\n`; //임시 변수였던 usd을 함수 호출로 대체, 변수 인라인 하기
-  result += `적립 포인트: ${totalVolumeCredits()}점\n`; //값 계산 로직을 함수로 추출, 변수 인라인 하기
+  result += `총액: ${usd(data.totalAmount)}\n`; //임시 변수였던 usd을 함수 호출로 대체, 변수 인라인 하기
+  result += `적립 포인트: ${data.totalVolumeCredits}점\n`; //값 계산 로직을 함수로 추출, 변수 인라인 하기
   return result;
-
-  function totalAmount() {
-    let result = 0; //변수 이름 바꾸기
-    for (let perf of invoicesJson.performances) {
-      result += perf.amount;
-    }
-    return result;
-  }
-
-  function totalVolumeCredits() {
-    let result = 0; //변수 이름 바꾸기
-    for (let perf of invoicesJson.performances) {
-      //값 누적 로직을 별도 for문으로 분리
-      //포인트를 적립한다.
-      result += perf.volumeCredits; //추출한 함수를 이용해 값을 누적
-    }
-    return result;
-  }
 
   function usd(aNumber) {
     //format -> usd 좀더 명확한 이름으로 변경
