@@ -27,12 +27,12 @@ function statement(invoice) {
   statementData.customer = invoice.customer;
   statementData.performances = invoice.performances.map(enrichPerformance);
   return renderPlainText(statementData);
-}
 
-function enrichPerformance(aPerformance) {
-  //데이터 불변성을 위한 얕은 복사
-  const result = Object.assign({}, aPerformance);
-  return result;
+  function enrichPerformance(aPerformance) {
+    //데이터 불변성을 위한 얕은 복사
+    const result = Object.assign({}, aPerformance);
+    return result;
+  }
 }
 
 function renderPlainText(data) {
