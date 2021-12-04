@@ -11,17 +11,12 @@ export class Account {
     return result;
   }
 
-  get overdraftCharge() {
-    //초과 인출 이자 계산
-    if (this.type.isPremium) {
-      const baseCharge = 10;
-      if (this._daysOverdrawn <= 7) return baseCharge;
-      else return baseCharge + (this._daysOverdrawn - 7) * 0.85;
-    } else return this._daysOverdrawn * 1.75;
-  }
-
   get daysOverdrawn() {
     return this._daysOverdrawn;
+  }
+
+  get overdraftCharge() {
+    return this.type.overdraftCharge(this.daysOverdrawn);
   }
 }
 
@@ -29,7 +24,17 @@ export class AccountType {
   constructor(type) {
     this._type = type;
   }
+
   get isPremium() {
     return this._type === 'Premium';
+  }
+
+  get overdraftCharge(daysOverdrawn) {
+    //초과 인출 이자 계산
+    if (this.isPremium) {
+      const baseCharge = 10;
+      if (daysOverdrawn <= 7) return baseCharge;
+      else return baseCharge + (daysOverdrawn - 7) * 0.85;
+    } else return daysOverdrawn * 1.75;
   }
 }
